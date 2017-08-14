@@ -6,6 +6,7 @@ import java.io.IOException;
 import javax.persistence.TypedQuery;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,7 +46,7 @@ public class LoginRegServlet extends HttpServlet {
 			LoginUser(request, response);
 			break;
 		case "/relog" :
-			
+			Relog(request, response);
 			break;
 		}
 	}
@@ -79,7 +80,11 @@ public class LoginRegServlet extends HttpServlet {
 				user.setDesc(desc);
 				UserService.addUser(user);
 				
-				//cookie stuff
+				request.getSession().setAttribute("un", username);
+				
+				Cookie cookie = new Cookie("username", username);
+				cookie.setMaxAge(60*60*24*7*3);
+				response.addCookie(cookie);
 				
 				response.sendRedirect("");
 			} else {
@@ -89,9 +94,58 @@ public class LoginRegServlet extends HttpServlet {
 		}
 	}
 
-	private void LoginUser(HttpServletRequest request, HttpServletResponse response) {
+	private void LoginUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
+		String username = request.getParameter("uname");
+		String password = request.getParameter("pword");
 		
+		List<User> users = UserService.getAllUsers();
+		User user = null;
+		if (users != null) {
+			for (User u: users) {
+				if (u.getUsername().equals(username)) {
+					user = u;
+					break;
+				}
+			}
+		}
+		
+		if (user != null && user.getPassword().equals(password)) {
+			request.getSession().setAttribute("un", username);
+			
+			Cookie cookie = new Cookie("username", username);
+			cookie.setMaxAge(60*60*24*7*3);
+			response.addCookie(cookie);
+			
+			request.getRequestDispatcher("homepage.jsp").forward(request, response);
+		} else {
+			request.setAttribute("loginerror", "Invalid username or password!");
+			request.getRequestDispatcher("loginreg.jsp").forward(request, response);
+		}
+	}
+	
+	private void Relog(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		Cookie[] cookies = request.getCookies();
+		String username = null;
+		// check if username cookie exists
+		if(cookies!=null){
+			for(Cookie cookie : cookies){
+				if(cookie.getName().equals("username")){
+					username = cookie.getValue();	//get username
+					cookie.setMaxAge(60*60*24*7*3);	//extend by 3 weeks
+					cookie.setHttpOnly(true);
+					response.addCookie(cookie);
+				}
+			}
+		}
+		
+		if(username!=null){
+			request.getSession().setAttribute("un", username);
+			request.getRequestDispatcher("homepage.jsp").forward(request, response);
+		}else{
+			response.sendRedirect("homepage.jsp");
+		}
 	}
 
 	/**
