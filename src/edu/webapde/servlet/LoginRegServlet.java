@@ -17,7 +17,7 @@ import edu.webapde.service.UserService;
 /**
  * Servlet implementation class LoginRegServlet
  */
-@WebServlet(urlPatterns={"/register", "/login", "/relog"})
+@WebServlet(urlPatterns={"/register", "/login", "/relog", "/logout"})
 public class LoginRegServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
@@ -44,6 +44,9 @@ public class LoginRegServlet extends HttpServlet {
 			break;
 		case "/login" : 
 			LoginUser(request, response);
+			break;
+		case "/logout" :
+			Logout(request, response);
 			break;
 		case "/relog" :
 			Relog(request, response);
@@ -122,6 +125,19 @@ public class LoginRegServlet extends HttpServlet {
 			request.setAttribute("loginerror", "Invalid username or password!");
 			request.getRequestDispatcher("loginreg.jsp").forward(request, response);
 		}
+	}
+	
+	private void Logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		// TODO Auto-generated method stub
+		request.getSession().invalidate();
+		
+		// kill cookie
+		Cookie cookie = new Cookie("username", "");
+		cookie.setMaxAge(0);
+		response.addCookie(cookie);
+		
+		// go to index.html
+		response.sendRedirect("loginreg.jsp");
 	}
 	
 	private void Relog(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
