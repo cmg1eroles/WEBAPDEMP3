@@ -87,6 +87,7 @@ public class PhotoServlet extends HttpServlet {
 		photo.setTitle(title);
 		photo.setDesc(desc);
 		photo.setPrivacy(priv);
+		photo.setPath("file://C:/Users/Carlo Eroles/Documents/WEBAPDE/MP3Photos/" + fileName);
 		
 		PhotoService.addPhoto(photo);*/
 		

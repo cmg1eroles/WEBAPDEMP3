@@ -16,6 +16,8 @@ public class Photo {
 	private String desc;
 	@Column
 	private boolean privacy;
+	@Column
+	private String path;
 	
 	public int getId() {
 		return id;
@@ -55,6 +57,14 @@ public class Photo {
 	
 	public void setPrivacy(boolean privacy) {
 		this.privacy = privacy;
+	}
+	
+	public String getPath() {
+		return path;
+	}
+	
+	public void setPath(String path) {
+		this.path = path;
 	}
 	
 	@Override

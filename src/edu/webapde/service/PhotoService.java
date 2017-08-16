@@ -4,7 +4,6 @@ import javax.persistence.*;
 import java.util.List;
 
 import edu.webapde.bean.Photo;
-import edu.webapde.bean.User;
 
 public class PhotoService {
 	
