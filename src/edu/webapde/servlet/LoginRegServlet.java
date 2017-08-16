@@ -89,7 +89,7 @@ public class LoginRegServlet extends HttpServlet {
 				cookie.setMaxAge(60*60*24*7*3);
 				response.addCookie(cookie);
 				
-				response.sendRedirect("");
+				response.sendRedirect("photos");
 			} else {
 				request.setAttribute("regerror", "Username already taken!");
 				request.getRequestDispatcher("loginreg.jsp").forward(request, response);
@@ -120,7 +120,7 @@ public class LoginRegServlet extends HttpServlet {
 			cookie.setMaxAge(60*60*24*7*3);
 			response.addCookie(cookie);
 			
-			request.getRequestDispatcher("homepage.jsp").forward(request, response);
+			request.getRequestDispatcher("photos").forward(request, response);
 		} else {
 			request.setAttribute("loginerror", "Invalid username or password!");
 			request.getRequestDispatcher("loginreg.jsp").forward(request, response);
@@ -158,9 +158,9 @@ public class LoginRegServlet extends HttpServlet {
 		
 		if(username!=null){
 			request.getSession().setAttribute("un", username);
-			request.getRequestDispatcher("homepage.jsp").forward(request, response);
+			request.getRequestDispatcher("photos").forward(request, response);
 		}else{
-			response.sendRedirect("homepage.jsp");
+			response.sendRedirect("photos");
 		}
 	}
 
