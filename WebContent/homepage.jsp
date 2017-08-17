@@ -43,22 +43,18 @@
 	</div>
 	
 	<div id="public-container" class="container">
-		<c:forEach items="${photos}" var ="p">
-		<c:if test="${p.privacy == false}">
+		<c:forEach items="${publicphotos}" var ="p">
 			<div class="thumbnail public clickable" data-photo="${p}" style="display: none">
 				<img src="photo/${p.filename}">
 			</div>
-		</c:if>
 		</c:forEach>
     </div>  
     
     <div id="private-container" class="container">
-    	<c:forEach items="${photos}" var ="p">
-		<c:if test="${p.privacy == true}">
+    	<c:forEach items="${privatephotos}" var ="p">
 			<div class="thumbnail private clickable" data-photo="${p}" style="display: none">
 				<img src="photo/${p.filename}">
 			</div>
-		</c:if>
 		</c:forEach>
     </div>
         

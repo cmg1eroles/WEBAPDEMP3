@@ -41,7 +41,7 @@ public class PhotoService {
 		return photo;
 	}
 	
-	public static List<Photo> getAllPhotos() {
+	public static List<Photo> getPhotos(boolean privacy) {
 		List<Photo> photos = null;
 		
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory("mysqldb");
@@ -51,7 +51,8 @@ public class PhotoService {
 		try{
 			trans.begin();
 			
-			TypedQuery<Photo> query = em.createQuery("SELECT photo FROM photo photo", Photo.class);
+			TypedQuery<Photo> query = em.createQuery("SELECT photo FROM photo photo WHERE privacy = :privacy", Photo.class);
+			query.setParameter("privacy", privacy);
 			photos = query.getResultList();
 			
 			trans.commit();

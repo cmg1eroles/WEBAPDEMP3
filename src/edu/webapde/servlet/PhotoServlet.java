@@ -7,6 +7,7 @@ import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,7 +20,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
 import edu.webapde.bean.Photo;
+import edu.webapde.bean.User;
 import edu.webapde.service.PhotoService;
+import edu.webapde.service.SharedService;
+import edu.webapde.service.UserService;
 
 /**
  * Servlet implementation class PhotoServlet
@@ -75,10 +79,25 @@ public class PhotoServlet extends HttpServlet {
 
 	private void getAllPhotos(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		List<Photo> photos = PhotoService.getAllPhotos();
-		Collections.reverse(photos);
+		User user = null;
+		String username = (String) request.getSession().getAttribute("un");
 		
-		request.setAttribute("photos", photos);
+		List<Photo> publicphotos = PhotoService.getPhotos(false);
+		Collections.reverse(publicphotos);
+		request.setAttribute("publicphotos", publicphotos);
+		
+		if (username != null && !username.equals("")) {
+			user = UserService.getUserByUsername(username);
+			List<Photo> sharedphotos = PhotoService.getPhotos(true);
+			List<Photo> privatephotos = new ArrayList<Photo>();
+			for (Photo photo : sharedphotos) {
+				if (SharedService.isSharedWith(photo.getId(), user.getId()))
+					privatephotos.add(photo);
+			}
+			Collections.reverse(privatephotos);
+			request.setAttribute("privatephotos", privatephotos);
+		}
+		
 		request.getRequestDispatcher("homepage.jsp").forward(request, response);
 	}
 
