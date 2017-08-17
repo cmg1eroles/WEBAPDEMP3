@@ -3,6 +3,7 @@ package edu.webapde.servlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -22,7 +23,7 @@ import edu.webapde.service.PhotoService;
 /**
  * Servlet implementation class PhotoServlet
  */
-@WebServlet(urlPatterns={"/photos", "/uploadphoto"})
+@WebServlet(urlPatterns={"/photos", "/photo/*", "/uploadphoto"})
 @MultipartConfig
 public class PhotoServlet extends HttpServlet {
 	
@@ -50,10 +51,25 @@ public class PhotoServlet extends HttpServlet {
 		case "/photos" :
 			getAllPhotos(request, response);
 			break;
+		case "/photo" :
+			loadPhoto(request, response);
+			break;
 		case "/uploadphoto" :
 			uploadPhoto(request, response);
 			break;
 		}
+	}
+
+	private void loadPhoto(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		String url = request.getPathInfo().substring(1);
+		String filename = URLDecoder.decode(url, "UTF-8");
+		
+		File file = new File(FOLDER.getPath(), filename);
+		response.setHeader("Content-Type", getServletContext().getMimeType(filename));
+		response.setHeader("Content-Length", String.valueOf(file.length()));
+		
+		Files.copy(file.toPath(), response.getOutputStream());
 	}
 
 	private void getAllPhotos(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -87,7 +103,7 @@ public class PhotoServlet extends HttpServlet {
 		photo.setTitle(title);
 		photo.setDesc(desc);
 		photo.setPrivacy(priv);
-		photo.setPath("file://C:/Users/Carlo Eroles/Documents/WEBAPDE/MP3Photos/" + fileName);
+		photo.setFilename(fileName);
 		
 		PhotoService.addPhoto(photo);*/
 		

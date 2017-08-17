@@ -45,7 +45,7 @@
 	<div id="public-container" class="container">
 		<c:forEach items="${photos}" var ="p">
 			<div class="thumbnail clickable" data-photo="${p}">
-				<img src="${p.path}">
+				<img src="photo/${p.filename}">
 			</div>
 		</c:forEach>
     </div>  

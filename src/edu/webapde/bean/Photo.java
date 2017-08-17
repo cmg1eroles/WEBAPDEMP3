@@ -17,8 +17,8 @@ public class Photo {
 	@Column
 	private boolean privacy;
 	@Column
-	private String path;
-	
+	private String filename;
+
 	public int getId() {
 		return id;
 	}
@@ -59,12 +59,12 @@ public class Photo {
 		this.privacy = privacy;
 	}
 	
-	public String getPath() {
-		return path;
+	public String getFilename() {
+		return filename;
 	}
-	
-	public void setPath(String path) {
-		this.path = path;
+
+	public void setFilename(String filename) {
+		this.filename = filename;
 	}
 	
 	@Override
