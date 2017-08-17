@@ -44,13 +44,22 @@
 	
 	<div id="public-container" class="container">
 		<c:forEach items="${photos}" var ="p">
-			<div class="thumbnail clickable" data-photo="${p}" style="display: none">
+		<c:if test="${p.privacy == false}">
+			<div class="thumbnail public clickable" data-photo="${p}" style="display: none">
 				<img src="photo/${p.filename}">
 			</div>
+		</c:if>
 		</c:forEach>
     </div>  
     
     <div id="private-container" class="container">
+    	<c:forEach items="${photos}" var ="p">
+		<c:if test="${p.privacy == true}">
+			<div class="thumbnail private clickable" data-photo="${p}" style="display: none">
+				<img src="photo/${p.filename}">
+			</div>
+		</c:if>
+		</c:forEach>
     </div>
         
     <div id="more">
@@ -106,12 +115,13 @@
   			lastpic = 0;
    			lastshared = 0;
    			
-   			pics = $("div.thumbnail").toArray();
+   			pics = $("div.thumbnail.public").toArray();
+   			sharedpics = $("div.thumbnail.private").toArray();
    			
    			loadNext(BY);
    			if (mode == "public" && lastpic >= pics.length)
    					$("#more").hide();
-   			//loadPrivate(BY);
+   			loadPrivate(BY);
    			if (mode == "private" && lastshared >= sharedpics.length)
    					$("#more").hide();
             
