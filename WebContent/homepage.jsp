@@ -203,7 +203,9 @@
     		  		
    		  		$("#modal-photo").attr("src", "photo/"+photo.filename);
     			$("#photo-title").text(photo.title);
-    			//$("#photo-uploader").text(photo.user);
+    			$.post("ajaxusername/"+photo.userid, function(data){
+    				$("#photo-uploader").text(data);
+    			});
     			$("#photo-desc").text(photo.desc);
     			//$("#photo-tags").text("Tags: " + photo.tags);
     			

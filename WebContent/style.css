@@ -272,7 +272,7 @@ footer{
 .photos-container{
 	width: 100%;
 	background-color: white;
-	position: absolute;
+	position: relative;
 	top: 460px;
 	left: 0px;
     //z-index:-2;
@@ -341,8 +341,8 @@ footer{
 #morepics {
 	position: relative;
     width: 100%;
-    top: 630px;
     height: 35px;
+    top: 480px;
 }
 
 #morepics:hover {

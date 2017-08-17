@@ -66,6 +66,32 @@ public class UserService {
 		return user;
 	}
 	
+	public static String getUsername(int id) {
+		String username = "";
+		
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory("mysqldb");
+		EntityManager em = emf.createEntityManager();
+		EntityTransaction trans = em.getTransaction();
+		
+		try{
+			trans.begin();
+			
+			TypedQuery<User> query = em.createQuery("SELECT user FROM user user WHERE userid = :id", User.class);
+			query.setParameter("id", id);
+			username = query.getResultList().get(0).getUsername();
+			
+			trans.commit();
+		}catch(Exception e){
+			if(trans!=null){
+				trans.rollback();
+			}
+			e.printStackTrace();
+		}
+		em.close();
+		
+		return username;
+	}
+	
 	public static List<User> getAllUsers() {
 		List<User> users = null;
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory("mysqldb");

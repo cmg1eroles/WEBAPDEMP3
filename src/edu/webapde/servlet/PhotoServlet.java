@@ -3,6 +3,7 @@ package edu.webapde.servlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -30,7 +31,7 @@ import edu.webapde.service.UserService;
 /**
  * Servlet implementation class PhotoServlet
  */
-@WebServlet(urlPatterns={"/photos", "/ajaxphotos/*", "/photo/*", "/uploadphoto"})
+@WebServlet(urlPatterns={"/photos", "/ajaxphotos/*", "/ajaxuserphotos/*", "/photo/*", "/uploadphoto"})
 @MultipartConfig
 public class PhotoServlet extends HttpServlet {
 	
@@ -61,6 +62,9 @@ public class PhotoServlet extends HttpServlet {
 		case "/ajaxphotos" :
 			getPhotos(request, response);
 			break;
+		case "/ajaxuserphotos" :
+			getUserPhotos(request, response);
+			break;
 		case "/photo" :
 			loadPhoto(request, response);
 			break;
@@ -69,6 +73,8 @@ public class PhotoServlet extends HttpServlet {
 			break;
 		}
 	}
+
+	
 
 	private void loadPhoto(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
@@ -117,7 +123,39 @@ public class PhotoServlet extends HttpServlet {
 			response.getWriter().write(jsonString);
 		}
 	}
-
+	
+	private void getUserPhotos(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		// TODO Auto-generated method stub
+		String url = request.getPathInfo().substring(1);
+		String username = URLDecoder.decode(url, "UTF-8");
+		String loggedin = (String) request.getSession().getAttribute("un");
+		Gson g = new Gson();
+		
+		User user = UserService.getUserByUsername(username);
+		User loggedinuser = UserService.getUserByUsername(loggedin);
+		
+		List<Photo> photos = new ArrayList<Photo>();
+		List<Photo> publicphotos = PhotoService.getPhotos(false);
+		List<Photo> privatephotos = PhotoService.getPhotos(true);
+		
+		for (Photo photo : publicphotos) {
+			if (photo.getUserid() == user.getId())
+				photos.add(photo);
+		}
+		
+		if (loggedinuser != null) {
+			for (Photo photo : privatephotos) {
+				if ((photo.getUserid() == user.getId() && SharedService.isSharedWith(photo.getId(), loggedinuser.getId())) ||
+					photo.getUserid() == loggedinuser.getId())
+					photos.add(photo);
+			}
+		}
+		Collections.reverse(photos);
+		String jsonString = g.toJson(photos);
+		response.setContentType("application/json");
+		response.getWriter().write(jsonString);
+	}
+	
 	private void uploadPhoto(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		// TODO Auto-generated method stub
 		Part part = request.getPart("image");
