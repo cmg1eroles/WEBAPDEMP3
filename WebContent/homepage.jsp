@@ -44,7 +44,7 @@
 	
 	<div id="public-container" class="container">
 		<c:forEach items="${photos}" var ="p">
-			<div class="thumbnail clickable" data-photo="${p}">
+			<div class="thumbnail clickable" data-photo="${p}" style="display: none">
 				<img src="photo/${p.filename}">
 			</div>
 		</c:forEach>
@@ -73,81 +73,22 @@
     
     <script>
     	const BY = 15;
-    	var sharedpics = [];
-    	var publicpics = [];
-    	var uname, searchkey = "", mode;
+    	var sharedpics;
+    	var pics;
+    	var uname, mode;
     	var lastpic, lastshared;
-    	
-    	function loadShared() {
-    		if (searchkey == "dog" || searchkey == "") {
-	   			for (var i = 0 ; i < privatephotos.length ; i++) {
-	    			var p = privatephotos[i];
-	    			var allowed = p.allowed;
-	   				if ($.inArray(uname, allowed) >= 0) 
-	   					sharedpics.push(p);
-	   			}
-   			}
-    	}
-    	
-    	function loadPublicPics() {
-    		if (searchkey == "batman") {
-    			for (var i = 0 ; i < 15 ; i++) {
-	    			var p = publicphotos[i];
-	    			publicpics.push(p);
-	    		}
-    		} else if (searchkey == "girl") {
-    			for (var i = 15 ; i < 30 ; i++) {
-	    			var p = publicphotos[i];
-	    			publicpics.push(p);
-	    		}
-    		} else if (searchkey == "dog"){
-    		} else if (searchkey == ""){
-    			for (var i = 0 ; i < publicphotos.length ; i++) {
-	    			var p = publicphotos[i];
-	    			publicpics.push(p);
-	    		}
-    		}
-    	}
-    	
-    	function addPic(num) {
-    		var d = document.createElement("div");
-    		var img = document.createElement("img");
-    		
-    		$(d).addClass("thumbnail");
-    		$(d).addClass("clickable");
-    		
-    		$(d).attr("data-photoId", num);
-    		$(img).attr("src", publicpics[num].src);
-    		
-    		$(d).append(img);
-    		$("#public-container").append(d);
-    	}
-    	
-    	function addPrivate(num) {
-    		var d = document.createElement("div");
-    		var img = document.createElement("img");
-    		
-    		$(d).addClass("thumbnail");
-    		$(d).addClass("clickable");
-    		
-    		$(d).attr("data-photoId", num);
-    		$(img).attr("src", sharedpics[num].src);
-    		
-    		$(d).append(img);
-    		$("#private-container").append(d);
-    	}
     	
     	function loadNext(by) {
     		var i;
-    		for (i = lastpic ; i >= lastpic-(by-1) && i >= 0 ; i--)
-                addPic(i);
+    		for (i = lastpic ; i < lastpic+by && i < pics.length ; i++)
+                $(pics[i]).show();
             lastpic = i;
     	}
     	
     	function loadPrivate(by) {
     		var i;
-    		for (i = lastshared ; i >= lastshared-(by-1) && i >= 0 ; i--)
-                addPrivate(i);
+    		for (i = lastshared ; i < lastshared + by && i < sharedpics.length ; i++)
+                $(sharedpics[i]).show();
             lastshared = i;
     	}
     	
@@ -158,47 +99,38 @@
     		if (uname != "")
     			$("#to-upload-page").show();
     		
-    		if (searchkey != "dog") {
-	    		$("#private-container").hide();
-	    		$("#public-container").show();
-	    		mode = "public";
-    		} else {
-    			$("#public-container").hide();
-	    		$("#private-container").show();
-	    		mode = "private";
-    		}
-    	
-    		$.when(loadPublicPhotos(), loadPrivatePhotos()).done(function() {
-    			$.when(loadPublicPics(), loadShared()).done(function() {
-    				
-    				lastpic = publicpics.length-1;
-	    			lastshared = sharedpics.length-1;
-	    			
-	    			loadNext(BY);
-	    			if (mode == "public" && lastpic == -1)
-	    					$("#more").hide();
-	    			loadPrivate(BY);
-	    			if (mode == "private" && lastshared == -1)
-	    					$("#more").hide();
-		            
-		    		$("#more").click(function() {
-		    			if (mode == "public") {
-		    				loadNext(BY);
-		    				if (lastpic = -1)
-		    					$("#more").hide();
-		    			} else if (mode == "shared") {
-		    				loadPrivate(BY);
-		    				if (lastshared == -1)
-		    					$("#more").hide();
-		    			}
-		    		});
-    			});
+    		$("#private-container").hide();
+    		$("#public-container").show();
+    		mode = "public";
+			
+  			lastpic = 0;
+   			lastshared = 0;
+   			
+   			pics = $("div.thumbnail").toArray();
+   			
+   			loadNext(BY);
+   			if (mode == "public" && lastpic >= pics.length)
+   					$("#more").hide();
+   			//loadPrivate(BY);
+   			if (mode == "private" && lastshared >= sharedpics.length)
+   					$("#more").hide();
+            
+    		$("#more").click(function() {
+    			if (mode == "public") {
+    				loadNext(BY);
+    				if (lastpic >= pics.length)
+    					$("#more").hide();
+    			} else if (mode == "shared") {
+    				loadPrivate(BY);
+    				if (lastshared >= sharedpics.length)
+    					$("#more").hide();
+    			}
     		});
     		
     		$("#publicbtn").click(function() {
     			$("#private-container").hide();
     			$("#public-container").show();
-    			if (lastpic == -1)
+    			if (lastpic >= pics.length)
     				$("#more").hide();
     			else $("#more").show();
     			mode = "public";
@@ -207,7 +139,7 @@
     		$("#sharedbtn").click(function() {
     			$("#public-container").hide();
     			$("#private-container").show();
-    			if (lastshared == -1)
+    			if (lastshared >= sharedpics.length)
     				$("#more").hide();
     			else $("#more").show();
     			mode = "shared";
@@ -217,7 +149,7 @@
     			var photo, id;
     			id = event.currentTarget.getAttribute("data-photoId");
     			if (mode == "public")
-    				photo = publicpics[id];
+    				photo = pics[id];
     			else if (mode == "shared")
     				photo = sharedpics[id];
     			

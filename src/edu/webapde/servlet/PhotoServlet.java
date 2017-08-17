@@ -7,6 +7,7 @@ import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -75,6 +76,7 @@ public class PhotoServlet extends HttpServlet {
 	private void getAllPhotos(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		List<Photo> photos = PhotoService.getAllPhotos();
+		Collections.reverse(photos);
 		
 		request.setAttribute("photos", photos);
 		request.getRequestDispatcher("homepage.jsp").forward(request, response);
