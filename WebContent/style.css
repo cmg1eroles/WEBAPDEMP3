@@ -559,6 +559,15 @@ input {
 }
 #edit-container {
 	padding-top: 100px;
+	position: relative;
+	top: 50px;
+	width: 300px;
+	height: 500px;
+	margin: auto;
+}
+
+#edit-container input{
+	width:300px;
 }
 
 #edit-icon {
