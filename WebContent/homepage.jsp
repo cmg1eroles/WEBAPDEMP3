@@ -43,19 +43,11 @@
 	</div>
 	
 	<div id="public-container" class="container">
-		<c:forEach items="${publicphotos}" var ="p">
-			<div class="thumbnail public clickable" data-photo=${p} data-title="${p.title}" data-desc="${p.desc}" data-fname="${p.filename}" style="display: none">
-				<img src="photo/${p.filename}">
-			</div>
-		</c:forEach>
+		
     </div>  
     
     <div id="private-container" class="container">
-    	<c:forEach items="${privatephotos}" var ="p">
-			<div class="thumbnail private clickable" data-title="${p.title}" data-desc="${p.desc}" data-fname="${p.filename}" style="display: none">
-				<img src="photo/${p.filename}">
-			</div>
-		</c:forEach>
+    	
     </div>
         
     <div id="more">
@@ -83,17 +75,67 @@
     	var uname, mode;
     	var lastpic, lastshared;
     	
+    	function loadPics() {
+    		return $.ajax({
+				"url" : "ajaxphotos/public",
+				"method" : "post",
+				"dataType" : "json",
+				"success" : function(data){
+					pics = data;
+				}
+			});
+    	}
+    	
+    	function loadShared() {
+    		return $.ajax({
+				"url" : "ajaxphotos/private",
+				"method" : "post",
+				"dataType" : "json",
+				"success" : function(data){
+					sharedpics = data;
+				}
+			});
+    	}
+    	
+    	function addPic(num) {
+    		var d = document.createElement("div");
+    		var img = document.createElement("img");
+    		
+    		$(d).addClass("thumbnail");
+    		$(d).addClass("clickable");
+    		
+    		$(d).attr("data-photoId", num);
+    		$(img).attr("src", "photo/"+pics[num].filename);
+    		
+    		$(d).append(img);
+    		$("#public-container").append(d);
+    	}
+    	
+    	function addPrivate(num) {
+    		var d = document.createElement("div");
+    		var img = document.createElement("img");
+    		
+    		$(d).addClass("thumbnail");
+    		$(d).addClass("clickable");
+    		
+    		$(d).attr("data-photoId", num);
+    		$(img).attr("src", "photo/"+sharedpics[num].filename);
+    		
+    		$(d).append(img);
+    		$("#private-container").append(d);
+    	}
+    	
     	function loadNext(by) {
     		var i;
     		for (i = lastpic ; i < lastpic+by && i < pics.length ; i++)
-                $(pics[i]).show();
+                addPic(i);
             lastpic = i;
     	}
     	
     	function loadPrivate(by) {
     		var i;
     		for (i = lastshared ; i < lastshared + by && i < sharedpics.length ; i++)
-                $(sharedpics[i]).show();
+                addPrivate(i);
             lastshared = i;
     	}
     	
@@ -111,27 +153,27 @@
   			lastpic = 0;
    			lastshared = 0;
    			
-   			pics = $("div.thumbnail.public").toArray();
-   			sharedpics = $("div.thumbnail.private").toArray();
-   			
-   			loadNext(BY);
-   			if (mode == "public" && lastpic >= pics.length)
-   					$("#more").hide();
-   			loadPrivate(BY);
-   			if (mode == "private" && lastshared >= sharedpics.length)
-   					$("#more").hide();
-            
-    		$("#more").click(function() {
-    			if (mode == "public") {
-    				loadNext(BY);
-    				if (lastpic >= pics.length)
-    					$("#more").hide();
-    			} else if (mode == "shared") {
-    				loadPrivate(BY);
-    				if (lastshared >= sharedpics.length)
-    					$("#more").hide();
-    			}
-    		});
+   			$.when(loadPics(), loadShared()).done(function(){
+   				
+   				loadNext(BY);
+	   			if (mode == "public" && lastpic >= pics.length)
+	   					$("#more").hide();
+	   			loadPrivate(BY);
+	   			if (mode == "private" && lastshared >= sharedpics.length)
+	   					$("#more").hide();
+	            
+	    		$("#more").click(function() {
+	    			if (mode == "public") {
+	    				loadNext(BY);
+	    				if (lastpic >= pics.length)
+	    					$("#more").hide();
+	    			} else if (mode == "shared") {
+	    				loadPrivate(BY);
+	    				if (lastshared >= sharedpics.length)
+	    					$("#more").hide();
+	    			}
+	    		});
+   			}); 
     		
     		$("#publicbtn").click(function() {
     			$("#private-container").hide();
@@ -152,14 +194,17 @@
     		});
     		
     		$(document).on("click", ".thumbnail", function(event) {
-    		  	var title = event.currentTarget.getAttribute("data-title");
-    		  	var desc = event.currentTarget.getAttribute("data-desc");
-    		  	var filename = event.currentTarget.getAttribute("data-fname");
-    		  	
-   		  		$("#modal-photo").attr("src", "photo/"+filename);
-    			$("#photo-title").text(title);
+    		  	var id = event.currentTarget.getAttribute("data-photoId");
+    		  	var photo;
+    		  	if (mode == "public")
+    		  		photo = pics[id];
+    		  	else if (mode == "private")
+    		  		photo = sharedpics[id];
+    		  		
+   		  		$("#modal-photo").attr("src", "photo/"+photo.filename);
+    			$("#photo-title").text(photo.title);
     			//$("#photo-uploader").text(photo.user);
-    			$("#photo-desc").text(desc);
+    			$("#photo-desc").text(photo.desc);
     			//$("#photo-tags").text("Tags: " + photo.tags);
     			
     			$("#modal").css("display", "flex");

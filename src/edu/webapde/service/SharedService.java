@@ -78,10 +78,8 @@ public class SharedService {
 			
 			trans.commit();
 			
-			if (shared.size() > 0) {
+			if (shared.size() > 0)
 				isShared = true;
-				System.out.println("\n\n\nIt's shared with youuuu!\n\n");
-			}
 		}catch(Exception e){
 			if(trans!=null){
 				trans.rollback();

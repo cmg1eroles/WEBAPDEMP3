@@ -19,6 +19,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
+import com.google.gson.Gson;
+
 import edu.webapde.bean.Photo;
 import edu.webapde.bean.User;
 import edu.webapde.service.PhotoService;
@@ -28,7 +30,7 @@ import edu.webapde.service.UserService;
 /**
  * Servlet implementation class PhotoServlet
  */
-@WebServlet(urlPatterns={"/photos", "/photo/*", "/uploadphoto"})
+@WebServlet(urlPatterns={"/photos", "/ajaxphotos/*", "/photo/*", "/uploadphoto"})
 @MultipartConfig
 public class PhotoServlet extends HttpServlet {
 	
@@ -54,7 +56,10 @@ public class PhotoServlet extends HttpServlet {
 		
 		switch (path) {
 		case "/photos" :
-			getAllPhotos(request, response);
+			request.getRequestDispatcher("homepage.jsp").forward(request, response);
+			break;
+		case "/ajaxphotos" :
+			getPhotos(request, response);
 			break;
 		case "/photo" :
 			loadPhoto(request, response);
@@ -77,16 +82,23 @@ public class PhotoServlet extends HttpServlet {
 		Files.copy(file.toPath(), response.getOutputStream());
 	}
 
-	private void getAllPhotos(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	private void getPhotos(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
+		String url = request.getPathInfo().substring(1);
+		String type = URLDecoder.decode(url, "UTF-8");
+		Gson g = new Gson();
+		
 		User user = null;
 		String username = (String) request.getSession().getAttribute("un");
 		
-		List<Photo> publicphotos = PhotoService.getPhotos(false);
-		Collections.reverse(publicphotos);
-		request.setAttribute("publicphotos", publicphotos);
-		
-		if (username != null && !username.equals("")) {
+		if (type.equals("public")) {
+			List<Photo> publicphotos = PhotoService.getPhotos(false);
+			Collections.reverse(publicphotos);
+			String jsonString = g.toJson(publicphotos);
+			response.setContentType("application/json");
+			response.getWriter().write(jsonString);
+			
+		} else if (type.equals("private") && username != null && !username.equals("")) {
 			user = UserService.getUserByUsername(username);
 			List<Photo> sharedphotos = PhotoService.getPhotos(true);
 			List<Photo> privatephotos = new ArrayList<Photo>();
@@ -95,10 +107,15 @@ public class PhotoServlet extends HttpServlet {
 					privatephotos.add(photo);
 			}
 			Collections.reverse(privatephotos);
-			request.setAttribute("privatephotos", privatephotos);
+			String jsonString = g.toJson(privatephotos);
+			response.setContentType("application/json");
+			response.getWriter().write(jsonString);
+		} else {
+			List<Photo> empty = new ArrayList<Photo>();
+			String jsonString = g.toJson(empty);
+			response.setContentType("application/json");
+			response.getWriter().write(jsonString);
 		}
-		
-		request.getRequestDispatcher("homepage.jsp").forward(request, response);
 	}
 
 	private void uploadPhoto(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
