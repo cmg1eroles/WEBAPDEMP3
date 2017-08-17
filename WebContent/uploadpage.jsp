@@ -37,9 +37,11 @@
 			Tags: <input type="text" name="tag">
 			<br><br>
 			<div class="uploadbtn">
-				<input class="choose" name="btn" type="submit" value="Post as Public Photo">
-				<input class="choose" name="btn" type="submit" value="Post as Private Photo">
+				<input class="choose" name="btn" type="radio"><label class="pubpriv">Post as Public Photo</label><br>
+				<input class="choose" name="btn" type="radio"><label class="pubpriv">Post as Private Photo</label><br>
 			</div>
+			<br><br>
+			<input type="submit" value="UPLOAD">
 			<br><br>
 		</form>
 		</div>

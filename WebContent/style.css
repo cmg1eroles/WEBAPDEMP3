@@ -467,11 +467,14 @@ input {
 	border-radius: 10px;
 }
 
-#uploadbtn{
-	width:300px;
-	padding-top: 10px;
-	padding-bottom: 10px;
-	border-radius: 10px;
+.uploadbtn{
+	width:350px;
+	/*padding-left: 0px;*/
+}
+
+.uploaddiv input.choose{
+	width:50px;
+	margin-left: -50px;
 }
 
 #homepage-header {
