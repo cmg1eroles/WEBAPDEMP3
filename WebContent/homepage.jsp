@@ -44,7 +44,7 @@
 	
 	<div id="public-container" class="container">
 		<c:forEach items="${publicphotos}" var ="p">
-			<div class="thumbnail public clickable" data-photo="${p}" style="display: none">
+			<div class="thumbnail public clickable" data-photo=${p} data-title="${p.title}" data-desc="${p.desc}" data-fname="${p.filename}" style="display: none">
 				<img src="photo/${p.filename}">
 			</div>
 		</c:forEach>
@@ -52,7 +52,7 @@
     
     <div id="private-container" class="container">
     	<c:forEach items="${privatephotos}" var ="p">
-			<div class="thumbnail private clickable" data-photo="${p}" style="display: none">
+			<div class="thumbnail private clickable" data-title="${p.title}" data-desc="${p.desc}" data-fname="${p.filename}" style="display: none">
 				<img src="photo/${p.filename}">
 			</div>
 		</c:forEach>
@@ -152,18 +152,15 @@
     		});
     		
     		$(document).on("click", ".thumbnail", function(event) {
-    			var photo, id;
-    			id = event.currentTarget.getAttribute("data-photoId");
-    			if (mode == "public")
-    				photo = pics[id];
-    			else if (mode == "shared")
-    				photo = sharedpics[id];
-    			
-    			$("#modal-photo").attr("src", photo.src);
-    			$("#photo-title").text(photo.title);
-    			$("#photo-uploader").text(photo.user);
-    			$("#photo-desc").text(photo.desc);
-    			$("#photo-tags").text("Tags: " + photo.tags);
+    		  	var title = event.currentTarget.getAttribute("data-title");
+    		  	var desc = event.currentTarget.getAttribute("data-desc");
+    		  	var filename = event.currentTarget.getAttribute("data-fname");
+    		  	
+   		  		$("#modal-photo").attr("src", "photo/"+filename);
+    			$("#photo-title").text(title);
+    			//$("#photo-uploader").text(photo.user);
+    			$("#photo-desc").text(desc);
+    			//$("#photo-tags").text("Tags: " + photo.tags);
     			
     			$("#modal").css("display", "flex");
     		});
