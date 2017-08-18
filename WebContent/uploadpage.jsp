@@ -11,7 +11,7 @@
 </head>
 <body>
 	<div id="header">
-		<a href="homepage.jsp"><button class="clickable" id="btn-name">Instaliter</button></a>
+		<a href="photos"><button class="clickable" id="btn-name">Instaliter</button></a>
 		<a href="logout" id="signout" class="signing">SIGN OUT</a>
 		<span id="username" class="clickable">${sessionScope.un}</span>
 	</div>
@@ -34,32 +34,17 @@
 			<br><br>
 			Description: <input type="text" name="descr" id="edit-desc">
 			<br><br>
-			Tags: <input type="text" name="tag">
+			Tags: <input type="text" name="tag" id="tags">
 			<br><br>
 			<div class="uploadbtn">
-				<input class="choose" name="btn" type="radio"><label class="pubpriv">Post as Public Photo</label><br>
-				<input class="choose" name="btn" type="radio"><label class="pubpriv">Post as Private Photo</label><br>
+				<input class="choose" name="btn" type="radio" value="public" checked="true"><label class="pubpriv">Post as Public Photo</label><br>
+				<input class="choose" name="btn" type="radio" value="private"><label class="pubpriv">Post as Private Photo</label><br>
 			</div>
 			<br><br>
 			<input type="submit" value="UPLOAD">
 			<br><br>
 		</form>
 		</div>
-		<!-- <form action="uploadphoto" id="details" method="POST" enctype="multipart/form-data">
-		<div class="form-div-upload">
-			<input id="imginp" type="file" name="image" accept=".jpg, .png, .tiff">
-			<br><br>
-			Title: <input type="text" name="title">
-			<br><br>
-			Description: <input type="text" name="desc" id="descr">
-			<br><br>
-			Tags: <input type="text" name="tag">
-		</div>
-			<br><br>
-			<input class="choose" name="btn" type="submit" value="Post as public photo">
-			<input class="choose" name="btn" type="submit" value="Post as private photo">
-		</form> -->
-	</div>
 	
 	<script>
 		var uname;

@@ -3,6 +3,7 @@ package edu.webapde.servlet;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,13 +13,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.gson.Gson;
 
+import edu.webapde.bean.Shared;
 import edu.webapde.bean.User;
+import edu.webapde.service.SharedService;
 import edu.webapde.service.UserService;
 
 /**
  * Servlet implementation class UserServlet
  */
-@WebServlet(urlPatterns={"/ajaxusername/*", "/profile"})
+@WebServlet(urlPatterns={"/ajaxusername/*", "/profile", "/ajaxshared/*"})
 public class UserServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
@@ -46,6 +49,9 @@ public class UserServlet extends HttpServlet {
 		case "/profile" :
 			profileRedirect(request, response);
 			break;
+		case "/ajaxshared" :
+			getSharedWith(request, response);
+			break;
 		}
 	}
 
@@ -70,6 +76,26 @@ public class UserServlet extends HttpServlet {
 		String username = UserService.getUsername(id);
 		
 		String jsonString = g.toJson(username);
+		response.setContentType("application/json");
+		response.getWriter().write(jsonString);
+	}
+	
+	private void getSharedWith(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		// TODO Auto-generated method stub
+		String url = request.getPathInfo().substring(1);
+		String decoded = URLDecoder.decode(url, "UTF-8");
+		int id = Integer.parseInt(decoded);
+		Gson g = new Gson();
+		
+		List<Shared> shared = SharedService.getSharedTo(id);
+		String str = "";
+		for (Shared s : shared) {
+			User user = UserService.getUser(s.getUserid());
+			str += ", " + user.getUsername();
+		}
+		
+		str = str.substring(2);
+		String jsonString = g.toJson(str);
 		response.setContentType("application/json");
 		response.getWriter().write(jsonString);
 	}

@@ -1,20 +1,21 @@
 package edu.webapde.service;
 
-import javax.persistence.*;
 import java.util.List;
 
-import edu.webapde.bean.Photo;
+import javax.persistence.*;
 
-public class PhotoService {
+import edu.webapde.bean.Tag;
+
+public class TagService {
 	
-	public static void addPhoto(Photo photo) {
+	public static void addTag(Tag tag) {
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory("mysqldb");
 		EntityManager em = emf.createEntityManager();
 		EntityTransaction trans = em.getTransaction();
 		
 		try{
 			trans.begin();
-			em.persist(photo);
+			em.persist(tag);
 			trans.commit();
 		}catch(Exception e){
 			if(trans!=null){
@@ -25,24 +26,8 @@ public class PhotoService {
 		em.close();
 	}
 	
-	public static Photo getPhoto(int id) {
-		Photo photo = null;
-		
-		EntityManagerFactory emf = Persistence.createEntityManagerFactory("mysqldb");
-		EntityManager em = emf.createEntityManager();
-		EntityTransaction trans = em.getTransaction();
-		
-		trans.begin();
-		photo = em.find(Photo.class, id);
-		trans.commit();
-		
-		em.close();
-		
-		return photo;
-	}
-	
-	public static List<Photo> getPhotos(boolean privacy) {
-		List<Photo> photos = null;
+	public static List<Tag> getAllTags() {
+		List<Tag> tags = null;
 		
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory("mysqldb");
 		EntityManager em = emf.createEntityManager();
@@ -51,9 +36,8 @@ public class PhotoService {
 		try{
 			trans.begin();
 			
-			TypedQuery<Photo> query = em.createQuery("SELECT photo FROM photo photo WHERE privacy = :privacy", Photo.class);
-			query.setParameter("privacy", privacy);
-			photos = query.getResultList();
+			TypedQuery<Tag> query = em.createQuery("SELECT tag FROM tag tag", Tag.class);
+			tags = query.getResultList();
 			
 			trans.commit();
 		}catch(Exception e){
@@ -64,11 +48,11 @@ public class PhotoService {
 		}
 		em.close();
 		
-		return photos;
+		return tags;
 	}
 	
-	public static boolean updatePhoto(int id, Photo newPhoto) {
-		boolean success = false;
+	public static List<Tag> getTagsOfPhoto(int photoid) {
+		List<Tag> tags = null;
 		
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory("mysqldb");
 		EntityManager em = emf.createEntityManager();
@@ -77,14 +61,11 @@ public class PhotoService {
 		try{
 			trans.begin();
 			
-			Photo p = em.find(Photo.class, id);
-			p.setTitle(newPhoto.getTitle());
-			p.setDesc(newPhoto.getDesc());
-			p.setPrivacy(newPhoto.isPrivacy());
+			TypedQuery<Tag> query = em.createQuery("SELECT tag FROM tag tag WHERE photoid = :photoid", Tag.class);
+			query.setParameter("photoid", photoid);
+			tags = query.getResultList();
 			
 			trans.commit();
-			
-			success = true;
 		}catch(Exception e){
 			if(trans!=null){
 				trans.rollback();
@@ -93,6 +74,31 @@ public class PhotoService {
 		}
 		em.close();
 		
-		return success;
+		return tags;
+	}
+	
+	public static void removeTagsOfPhoto(int photoid) {
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory("mysqldb");
+		EntityManager em = emf.createEntityManager();
+		EntityTransaction trans = em.getTransaction();
+		
+		try{
+			trans.begin();
+			
+			TypedQuery<Tag> query = em.createQuery("SELECT tag FROM tag tag WHERE photoid = :photoid", Tag.class);
+			query.setParameter("photoid", photoid);
+			List<Tag> tags = query.getResultList();
+			
+			for (Tag tag : tags)
+				em.remove(tag);
+			
+			trans.commit();
+		}catch(Exception e){
+			if(trans!=null){
+				trans.rollback();
+			}
+			e.printStackTrace();
+		}
+		em.close();
 	}
 }

@@ -23,15 +23,17 @@ import javax.servlet.http.Part;
 import com.google.gson.Gson;
 
 import edu.webapde.bean.Photo;
+import edu.webapde.bean.Tag;
 import edu.webapde.bean.User;
 import edu.webapde.service.PhotoService;
 import edu.webapde.service.SharedService;
+import edu.webapde.service.TagService;
 import edu.webapde.service.UserService;
 
 /**
  * Servlet implementation class PhotoServlet
  */
-@WebServlet(urlPatterns={"/photos", "/ajaxphotos/*", "/ajaxuserphotos/*", "/photo/*", "/uploadphoto"})
+@WebServlet(urlPatterns={"/photos", "/ajaxphotos/*", "/ajaxuserphotos/*", "/photo/*", "/uploadphoto", "/editphoto", "/ajaxphoto/*", "/updatephoto"})
 @MultipartConfig
 public class PhotoServlet extends HttpServlet {
 	
@@ -71,10 +73,66 @@ public class PhotoServlet extends HttpServlet {
 		case "/uploadphoto" :
 			uploadPhoto(request, response);
 			break;
+		case "/editphoto" :
+			String id = request.getParameter("id");
+			request.setAttribute("photoId", id);
+			request.getRequestDispatcher("editphoto.jsp").forward(request, response);
+			break;
+		case "/ajaxphoto" :
+			getPhoto(request, response);
+			break;
+		case "/updatephoto" :
+			updatePhoto(request, response);
+			break;
 		}
 	}
 
 	
+
+	private void updatePhoto(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		
+		int id = Integer.parseInt(request.getParameter("photoId"));
+		String title = request.getParameter("title");
+		String desc = request.getParameter("desc");
+		String strTags = request.getParameter("tag");
+		String[] tags = strTags.split(", ");
+		
+		boolean updated = false;
+		
+		if (!title.equals("") && !desc.equals("")) {
+			Photo photo = PhotoService.getPhoto(id);
+			photo.setTitle(title);
+			photo.setDesc(desc);
+			updated = PhotoService.updatePhoto(id, photo);
+			
+			TagService.removeTagsOfPhoto(id);
+			for (int i = 0 ; i < tags.length ; i++) {
+				Tag tag = new Tag();
+				tag.setPhotoid(id);
+				tag.setTagname(tags[i]);
+				TagService.addTag(tag);
+			}
+		}
+		
+		if (updated)
+			request.setAttribute("success", "Successfully updated!");
+		else request.setAttribute("error", "Error in updating!");
+		request.getRequestDispatcher("editphoto?id="+id).forward(request, response);
+	}
+
+	private void getPhoto(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		// TODO Auto-generated method stub
+		String url = request.getPathInfo().substring(1);
+		String decoded = URLDecoder.decode(url, "UTF-8");
+		int id = Integer.parseInt(decoded);
+		Gson g = new Gson();
+		
+		Photo photo = PhotoService.getPhoto(id);
+		String jsonString = g.toJson(photo);
+		response.setContentType("application/json");
+		response.getWriter().write(jsonString);
+	}
 
 	private void loadPhoto(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
@@ -161,30 +219,56 @@ public class PhotoServlet extends HttpServlet {
 		Part part = request.getPart("image");
 		String fname = Paths.get(part.getSubmittedFileName()).getFileName().toString();
 		String fileName = System.currentTimeMillis() + "-image.jpg";
+		String username = (String) request.getSession().getAttribute("un");
 		
-		//String user = request.getParameter("userid");
+		User user = UserService.getUserByUsername(username);
+		
+		int userid = user.getId();
 		String title = request.getParameter("title");
 		String desc = request.getParameter("descr");
-		//String priv = request.getParameter("privacy");
+		String priv = request.getParameter("btn");
+		String strTags = request.getParameter("tag");
+		boolean privacy = false;
+		if (priv.equals("public")) {
+			privacy = false;
+		} else if (priv.equals("private")) {
+			privacy = true;
+		}
 		
-		File img = new File(FOLDER, fileName);
+		if (!fname.equals("") && !title.equals("") && !desc.equals("")) {
+			File img = new File(FOLDER, fileName);
+			
+			InputStream fileInputStream = part.getInputStream();
+			Files.copy(fileInputStream, img.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			fileInputStream.close();
+			
+			
+			Photo photo = new Photo();
+			photo.setUserid(userid);
+			photo.setTitle(title);
+			photo.setDesc(desc);
+			photo.setPrivacy(privacy);
+			photo.setFilename(fileName);
+			
+			PhotoService.addPhoto(photo);
+			
+			if (!strTags.equals("")) {
+				String[] strs = strTags.split(", ");
+				for (int i = 0 ; i < strs.length ; i++) {
+					System.out.println(strs[i]);
+					Tag tag = new Tag();
+					tag.setPhotoid(photo.getId());
+					tag.setTagname(strs[i]);
+					TagService.addTag(tag);
+				}
+			}
+			
+			//reload upload page
+			request.setAttribute("success", fname + " successfully uploaded!");
+		} else {
+			request.setAttribute("error", "ERROR: Could not upload image!");
+		}
 		
-		InputStream fileInputStream = part.getInputStream();
-		Files.copy(fileInputStream, img.toPath(), StandardCopyOption.REPLACE_EXISTING);
-		fileInputStream.close();
-		
-		//save to db
-		/*Photo photo = new Photo();
-		photo.setUserid(user);
-		photo.setTitle(title);
-		photo.setDesc(desc);
-		photo.setPrivacy(priv);
-		photo.setFilename(fileName);
-		
-		PhotoService.addPhoto(photo);*/
-		
-		//reload upload page
-		request.setAttribute("success", fname + " successfully uploaded!");
 		request.getRequestDispatcher("uploadpage.jsp").forward(request, response);
 	}
 

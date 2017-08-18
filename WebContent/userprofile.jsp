@@ -12,7 +12,7 @@
 <body>
 
 	<div id="header">
-		<a href="homepage.jsp"><button class="clickable" id="btn-name">Instaliter</button></a>
+		<a href="photos"><button class="clickable" id="btn-name">Instaliter</button></a>
 		<a href="loginreg.jsp" id="signin" class="signing">SIGN IN</a>
 		<a href="logout" id="signout" class="signing">SIGN OUT</a>
 		<span id="username" class="clickable">${sessionScope.un}</span>
@@ -51,10 +51,10 @@
          <div id="modal-container">
          	<img id="modal-photo">
          	<div id="modal-info">
-	         	<div class="photo-info" id="photo-title">Title</div> 
-	         	<div class="photo-info" id="photo-uploader">Uploader</div>
-	         	<div class="photo-info" id="photo-desc">Description</div>
-	         	<div class="photo-info" id="photo-tags">Tags</div>
+	         	<div class="photo-info" id="photo-title"></div> 
+	         	<div class="photo-info" id="photo-uploader"></div>
+	         	<div class="photo-info" id="photo-desc"></div>
+	         	<div class="photo-info" id="photo-tags"></div>
 	         	<img id="editbtn" class="clickable" src="resources/icons/edit.png">
 	         </div>
          </div>
@@ -136,8 +136,11 @@
     			$("#photo-title").text(photo.title);
     			$("#photo-uploader").text($("#profile-name").text());
     			$("#photo-desc").text(photo.desc);
-    			//$("#photo-tags").text("Tags: " + photo.tags);
+    			$.post("ajaxtags/"+photo.id, function(data){
+    				$("#photo-tags").text("Tags: " + data);
+    			});
     			
+    			picid = photo.id;
     			$("#modal").css("display", "flex");
     		});
   			

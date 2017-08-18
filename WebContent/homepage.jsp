@@ -60,10 +60,10 @@
          <div id="modal-container">
          	<img id="modal-photo">
          	<div id="modal-info">
-	         	<div class="photo-info" id="photo-title">Title</div> 
-	         	<div class="photo-info clickable" id="photo-uploader">Uploader</div>
-	         	<div class="photo-info" id="photo-desc">Description</div>
-	         	<div class="photo-info" id="photo-tags">Tags</div>
+	         	<div class="photo-info" id="photo-title"></div> 
+	         	<div class="photo-info clickable" id="photo-uploader"></div>
+	         	<div class="photo-info" id="photo-desc"></div>
+	         	<div class="photo-info" id="photo-tags"></div>
 	         </div>
          </div>
     </div>
@@ -89,6 +89,28 @@
     	function loadShared() {
     		return $.ajax({
 				"url" : "ajaxphotos/private",
+				"method" : "post",
+				"dataType" : "json",
+				"success" : function(data){
+					sharedpics = data;
+				}
+			});
+    	}
+    	
+    	function loadSearchPics() {
+    		return $.ajax({
+				"url" : "ajaxsearchpublic/"+searchkey,
+				"method" : "post",
+				"dataType" : "json",
+				"success" : function(data){
+					pics = data;
+				}
+			});
+    	}
+    	
+    	function loadSearchShared() {
+    		return $.ajax({
+				"url" : "ajaxsearchprivate/"+searchkey,
 				"method" : "post",
 				"dataType" : "json",
 				"success" : function(data){
@@ -142,6 +164,7 @@
     	$(document).ready(function() {
     		uname = $("#username").html();
     		searchkey = $("#hanap").attr("value");
+    		searchkey = searchkey.trim();
     		
     		if (uname != "")
     			$("#to-upload-page").show();
@@ -153,27 +176,39 @@
   			lastpic = 0;
    			lastshared = 0;
    			
-   			$.when(loadPics(), loadShared()).done(function(){
-   				
-   				loadNext(BY);
-	   			if (mode == "public" && lastpic >= pics.length)
-	   					$("#more").hide();
-	   			loadPrivate(BY);
-	   			if (mode == "private" && lastshared >= sharedpics.length)
-	   					$("#more").hide();
-	            
-	    		$("#more").click(function() {
-	    			if (mode == "public") {
-	    				loadNext(BY);
-	    				if (lastpic >= pics.length)
-	    					$("#more").hide();
-	    			} else if (mode == "shared") {
-	    				loadPrivate(BY);
-	    				if (lastshared >= sharedpics.length)
-	    					$("#more").hide();
-	    			}
-	    		});
-   			}); 
+   			if (searchkey == "") {
+	   			$.when(loadPics(), loadShared()).done(function(){
+	   				loadNext(BY);
+		   			if (mode == "public" && lastpic >= pics.length)
+		   					$("#more").hide();
+		   			loadPrivate(BY);
+		   			if (mode == "private" && lastshared >= sharedpics.length)
+		   					$("#more").hide();
+		   		});
+   			} else {
+   				console.log("search keeey");
+   				$.when(loadSearchPics(), loadSearchShared()).done(function(){
+	   				
+	   				loadNext(BY);
+		   			if (mode == "public" && lastpic >= pics.length)
+		   					$("#more").hide();
+		   			loadPrivate(BY);
+		   			if (mode == "private" && lastshared >= sharedpics.length)
+		   					$("#more").hide();
+		   		});
+   			}
+   			
+   			$("#more").click(function() {
+    			if (mode == "public") {
+    				loadNext(BY);
+    				if (lastpic >= pics.length)
+    					$("#more").hide();
+    			} else if (mode == "private") {
+    				loadPrivate(BY);
+    				if (lastshared >= sharedpics.length)
+    					$("#more").hide();
+    			}
+		    });
     		
     		$("#publicbtn").click(function() {
     			$("#private-container").hide();
@@ -190,7 +225,7 @@
     			if (lastshared >= sharedpics.length)
     				$("#more").hide();
     			else $("#more").show();
-    			mode = "shared";
+    			mode = "private";
     		});
     		
     		$(document).on("click", ".thumbnail", function(event) {
@@ -207,7 +242,9 @@
     				$("#photo-uploader").text(data);
     			});
     			$("#photo-desc").text(photo.desc);
-    			//$("#photo-tags").text("Tags: " + photo.tags);
+    			$.post("ajaxtags/"+photo.id, function(data){
+    				$("#photo-tags").text("Tags: " + data);
+    			});
     			
     			$("#modal").css("display", "flex");
     		});

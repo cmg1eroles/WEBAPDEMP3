@@ -5,20 +5,20 @@
 <head>
 <link rel="stylesheet" type="text/css" href="style.css">
 <script src="jquery-3.2.1.js"></script>
-<script src="loadphotos.js"></script>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <title>Instaliter | Edit</title>
 </head>
 <body>
 	<div id="header">
-		<a href="homepage.jsp"><button class="clickable" id="btn-name">Instaliter</button></a>
+		<a href="photos"><button class="clickable" id="btn-name">Instaliter</button></a>
 		<a href="logout" id="signout" class="signing">SIGN OUT</a>
 		<span id="username" class="clickable">${sessionScope.un}</span>
 	</div>
 	
 	<div id="edit-error" class="error">${error}</div>
 	<div id="edit-success" class="success">${success}</div>
-
+	<div id="photoid" style="display: none">${photoId}</div>
+	
 	<div id="edit-container">
 		<div id="edit-icon">
 			<img id="edit-img" src="resources/icons/edit1.png">
@@ -27,6 +27,7 @@
 		<form action="updatephoto" id="details" method="POST">
 		<br>
 			<div class="editlbl">EDIT</div>
+			<input type="hidden" name="photoId" value="${photoId}" >
 			<br><br>
 			Title: <input type="text" name="title" id="title">
 			<br><br>
@@ -34,34 +35,36 @@
 			<br><br>
 			Tags: <input type="text" name="tag" id="tag">
 			<br><br>
-			Share with: <input type="text" name="share" id="share">
+			<span id="sharelabel">Share with: </span><input type="text" name="share" id="share">
 			<br><br>
 			<div class="editbtn">
 				<input class="choose" name="edit" type="submit" value="Apply Changes">
 			</div>
 			<br><br>
-		<!-- <div class="form-div">
-			<br><br>
-			Title: <input type="text" name="title" id="title">
-			<br><br>
-			Description: <input type="text" name="desc" id="descr">
-			<br><br>
-			Tags: <input type="text" name="tag" id="tags">
-			<br><br>
-			Share with: <input type="text" name="share" id="share">
-			<br><br>
-			<input type="submit" name="edit" id="edit-btn" value="Apply Changes">
-		</div> -->	
 		</form>
 	</div>
 	
 	<script>
 		var uname;
-		var photoId = ${photoId}
+		var photoId = $("#photoid").html();
+		var photo;
+		
+		function loadPhoto() {
+			return $.ajax({
+				"url" : "ajaxphoto/"+photoId,
+				"method" : "post",
+				"dataType" : "json",
+				"success" : function(data){
+					photo = data;
+				}
+			});
+		}
 		
 		$(document).ready(function() {
 			uname = $("#username").html();
 			$("#signout").show();
+			$("#share").hide();
+			$("#sharelabel").hide();
 			
 			if ($("#edit-success").html() != "")
 				$("#edit-success").show();
@@ -69,33 +72,23 @@
 			if ($("#edit-error").html() != "")
 				$("#edit-error").show();
 			
-			$.when(loadPublicPhotos(), loadPrivatePhotos()).done(function() {
-				var photo = null;
-				for (var i = 0 ; i < publicphotos.length ; i++) {
-					if (publicphotos[i].id == photoId) {
-						photo = publicphotos[i];
-						break;
-					}
-				}
-				
-				if (photo == null) {
-					for (var i = 0 ; i < privatephotos.length ; i++) {
-						if (privatephotos[i].id == photoId) {
-							photo = privatephotos[i];
-							break;
-						}
-					}
-				}
-				
-				$("#edit-img").attr("src", photo.src);
+			$.when(loadPhoto()).done(function(){ 
+				$("#edit-img").attr("src", "photo/"+photo.filename);
 				$("#edit-img").attr("width", "256px");
 				$("#edit-img").attr("height", "256px");
 				
 				$("#title").attr("value", photo.title);
 				$("#descr").attr("value", photo.desc);
-				$("#tag").attr("value", photo.tags);
-				$("#share").attr("value", photo.allowed);
-				
+				$.post("ajaxtags/"+photo.id, function(data){
+    				$("#tag").attr("value", data);
+    			});
+				if (photo.privacy == true) {
+					$("#share").show();
+					$("#sharelabel").show();
+					$.post("/ajaxshared/"+photoId, function(data){
+						$("#share").attr("value", data);
+					});
+				}
 			});
 			
 			$("#username").click(function() {
