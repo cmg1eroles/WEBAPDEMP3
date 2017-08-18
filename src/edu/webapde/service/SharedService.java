@@ -5,8 +5,27 @@ import java.util.List;
 import javax.persistence.*;
 
 import edu.webapde.bean.Shared;
+import edu.webapde.bean.Tag;
 
 public class SharedService {
+	
+	public static void addShared(Shared shared) {
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory("mysqldb");
+		EntityManager em = emf.createEntityManager();
+		EntityTransaction trans = em.getTransaction();
+		
+		try{
+			trans.begin();
+			em.persist(shared);
+			trans.commit();
+		}catch(Exception e){
+			if(trans!=null){
+				trans.rollback();
+			}
+			e.printStackTrace();
+		}
+		em.close();
+	}
 	
 	public static List<Shared> getAllShared() {
 		List<Shared> shared = null;
@@ -89,5 +108,30 @@ public class SharedService {
 		em.close();
 		
 		return isShared;
+	}
+	
+	public static void removeSharedWith(int photoid) {
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory("mysqldb");
+		EntityManager em = emf.createEntityManager();
+		EntityTransaction trans = em.getTransaction();
+		
+		try{
+			trans.begin();
+			
+			TypedQuery<Shared> query = em.createQuery("SELECT shared FROM shared shared WHERE photoid = :photoid", Shared.class);
+			query.setParameter("photoid", photoid);
+			List<Shared> shared = query.getResultList();
+			
+			for (Shared s : shared)
+				em.remove(s);
+			
+			trans.commit();
+		}catch(Exception e){
+			if(trans!=null){
+				trans.rollback();
+			}
+			e.printStackTrace();
+		}
+		em.close();
 	}
 }

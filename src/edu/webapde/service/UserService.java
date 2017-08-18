@@ -52,7 +52,8 @@ public class UserService {
 			
 			TypedQuery<User> query = em.createQuery("SELECT user FROM user user WHERE username = :username", User.class);
 			query.setParameter("username", username);
-			user = (User) query.getResultList().get(0);
+			if (query.getResultList() != null && query.getResultList().size() > 0)
+				user = (User) query.getResultList().get(0);
 			
 			trans.commit();
 		}catch(Exception e){

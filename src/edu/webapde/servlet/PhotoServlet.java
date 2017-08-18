@@ -23,6 +23,7 @@ import javax.servlet.http.Part;
 import com.google.gson.Gson;
 
 import edu.webapde.bean.Photo;
+import edu.webapde.bean.Shared;
 import edu.webapde.bean.Tag;
 import edu.webapde.bean.User;
 import edu.webapde.service.PhotoService;
@@ -107,11 +108,27 @@ public class PhotoServlet extends HttpServlet {
 			updated = PhotoService.updatePhoto(id, photo);
 			
 			TagService.removeTagsOfPhoto(id);
-			for (int i = 0 ; i < tags.length ; i++) {
-				Tag tag = new Tag();
-				tag.setPhotoid(id);
-				tag.setTagname(tags[i]);
-				TagService.addTag(tag);
+			if (!strTags.equals("")) {
+				for (int i = 0 ; i < tags.length ; i++) {
+					Tag tag = new Tag();
+					tag.setPhotoid(id);
+					tag.setTagname(tags[i]);
+					TagService.addTag(tag);
+				}
+			}
+			
+			if (photo.isPrivacy()) {
+				String strShare = request.getParameter("share");
+				String[] share = strShare.split(", ");
+				SharedService.removeSharedWith(id);
+				if (!strShare.equals("")) {
+					for (int i = 0 ; i < share.length ; i++) {
+						Shared shared = new Shared();
+						shared.setPhotoid(id);
+						shared.setUserid(UserService.getUserByUsername(share[i]).getId());
+						SharedService.addShared(shared);
+					}
+				}
 			}
 		}
 		

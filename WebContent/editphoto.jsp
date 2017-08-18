@@ -85,7 +85,7 @@
 				if (photo.privacy == true) {
 					$("#share").show();
 					$("#sharelabel").show();
-					$.post("/ajaxshared/"+photoId, function(data){
+					$.post("ajaxshared/"+photoId, function(data){
 						$("#share").attr("value", data);
 					});
 				}

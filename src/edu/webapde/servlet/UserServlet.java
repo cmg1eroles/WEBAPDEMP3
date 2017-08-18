@@ -94,7 +94,8 @@ public class UserServlet extends HttpServlet {
 			str += ", " + user.getUsername();
 		}
 		
-		str = str.substring(2);
+		if (!str.equals(""))
+			str = str.substring(2);
 		String jsonString = g.toJson(str);
 		response.setContentType("application/json");
 		response.getWriter().write(jsonString);
